@@ -1,0 +1,277 @@
+basePath: /api/v1
+definitions:
+  models.DataExfiltrated:
+    properties:
+      c:
+        type: string
+      d:
+        type: string
+      h:
+        type: string
+      p:
+        type: string
+    type: object
+  models.DbPackage:
+    properties:
+      dataExfiltrated:
+        $ref: '#/definitions/models.DataExfiltrated'
+      id:
+        type: integer
+      sourceIP:
+        type: string
+      timestamp:
+        type: string
+    type: object
+  models.GauStruct:
+    properties:
+      domain:
+        type: string
+      retries:
+        type: integer
+      threads:
+        type: integer
+      timeout:
+        type: integer
+    type: object
+  models.PackageManager:
+    properties:
+      name:
+        type: string
+      package:
+        type: string
+      version:
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:9000
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server celler server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Example API
+  version: "1.0"
+paths:
+  /:
+    get:
+      description: redirect to root
+      responses: {}
+      summary: redirect to root
+      tags:
+      - root
+  /dns:
+    get:
+      description: GET all rows from SQLite for DNS data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully extracted vulnerable packages from DNS
+          schema:
+            items:
+              $ref: '#/definitions/models.DbPackage'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: GET DNS data from database
+      tags:
+      - dns
+  /domain:
+    post:
+      consumes:
+      - application/json
+      description: Get a list of vulnerable packages founded in site and gau tool
+      parameters:
+      - description: Object for search
+        in: body
+        name: inputGau
+        required: true
+        schema:
+          $ref: '#/definitions/models.GauStruct'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved list of vulnerable packages
+          schema:
+            items:
+              $ref: '#/definitions/models.PackageManager'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get vulnerable packages from site and gau
+      tags:
+      - gau
+  /github/org:
+    post:
+      consumes:
+      - application/json
+      description: Get dependency confusion packages that was founded in organization
+        git repositories
+      parameters:
+      - description: Get org repository packages
+        in: body
+        name: org
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully extracted vulnerable packages
+          schema:
+            items:
+              $ref: '#/definitions/models.PackageManager'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get organization git repositories
+      tags:
+      - org
+  /github/repo:
+    post:
+      consumes:
+      - application/json
+      description: Get dependency confusion packages that was founded in git repositories
+      parameters:
+      - description: Get repository packages
+        in: body
+        name: name
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully extracted vulnerable packages
+          schema:
+            items:
+              $ref: '#/definitions/models.PackageManager'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get a git repository
+      tags:
+      - repo
+  /parse/directory:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Parse a directory for dependency confusion
+      parameters:
+      - description: Files for scanning
+        in: formData
+        name: files[]
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully extracted vulnerable packages
+          schema:
+            items:
+              $ref: '#/definitions/models.PackageManager'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Parse a directory for dependency confusion
+      tags:
+      - dir
+  /parse/file:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Parse a file for dependency confusion
+      parameters:
+      - description: File for scanning
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully extracted vulnerable packages
+          schema:
+            items:
+              $ref: '#/definitions/models.PackageManager'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Parse a file for dependency confusion
+      tags:
+      - file
+  /registry:
+    post:
+      consumes:
+      - application/json
+      description: POST vulnerable version of package to corresponding registry
+      parameters:
+      - description: Package object
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.PackageManager'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: POST data to registry
+      tags:
+      - registry
+swagger: "2.0"

@@ -1,0 +1,34 @@
+threads = 2
+verbose = false
+retries = 15
+parameters = false
+providers = ["wayback","commoncrawl","otx","urlscan"]
+json = false
+
+[urlscan]
+  apikey = ""
+
+[otx]
+  apikey = ""
+
+[git]
+  accesstoken = ""
+
+[scrapeops]
+  scrapeopsAPIKey = ""
+
+[dns]
+  domain = ""
+  publicip = ""
+
+[[dns.arecords]]
+  hostname = ""
+  ip = ""
+
+[filters]
+  from = ""
+  to = ""
+  matchstatuscodes = [200]
+  matchmimetypes = [] # does not work
+  filterstatuscodes = []
+  filtermimetypes = ["image/png", "image/jpeg", "application/vnd.ms-fontobject", "application/pdf", "image/tiff", "audio/wav", "application/xhtml+xml", "font/ttf", "image/x-icon", "video/mp4", "video/mp3", "image/gif", "image/svg+xml", "text/html", "audio/aac", "application/octet-stream", "image/avif", "application/zip", "font/woff", "font/woff2", "application/msword"]
