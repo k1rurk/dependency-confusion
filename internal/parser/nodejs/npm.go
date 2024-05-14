@@ -345,7 +345,7 @@ func (n *NPMLookup) urlReference(pkgversion string) bool {
 // gitReference checks if the package version is in fact a reference to a remote git repository
 func (n *NPMLookup) gitReference(pkgversion string) bool {
 	pkgversion = strings.ToLower(pkgversion)
-	gitResources := []string{"git+ssh:", "git+http:", "git+https:", "git:"}
+	gitResources := []string{"git+ssh:", "git+http:", "git+https:", "git:", "github:"}
 	for _, r := range gitResources {
 		if strings.HasPrefix(pkgversion, r) {
 			return true
@@ -363,6 +363,10 @@ func (n *NPMLookup) gitHubReference(pkgversion string) bool {
 func (n NPMLookup) gitHubOrgExists(pkgversion string) bool {
 	orgName := strings.Split(pkgversion, "/")[0]
 	if len(orgName) > 0 {
+		org := strings.Split(orgName, ":")
+		if len(org) > 2 {
+			orgName = org[1]
+		}
 		if n.Verbose {
 			log.Infoln("Checking: https://github.com/" + orgName + " : ")
 		}
