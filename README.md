@@ -5,3 +5,4 @@
 * pip .pypirc in internal/upload_registry/pip/sources/.pypirc
 * npm .pypirc in internal/upload_registry/npm/sources/.npmrc
 * config.toml in config/. Values for keys like urlscan, otx, git, scrapeops, dns
+4) Change IP address for your VPS in JS files in directory /public/js/.
