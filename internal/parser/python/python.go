@@ -106,8 +106,12 @@ func (p *PythonLookup) ReadPackagesFromPipfile(rawfile []byte) error {
 			case string:
 				p.Packages = append(p.Packages, PythonPackage{key, v})
 			default:
-				val := v.(map[string]interface{})["version"].(string)
-				p.Packages = append(p.Packages, PythonPackage{key, val})
+				tempVal := v.(map[string]interface{})
+				if interf, ok := tempVal["version"]; ok {
+					p.Packages = append(p.Packages, PythonPackage{key, interf.(string)})
+				} else {
+					p.Packages = append(p.Packages, PythonPackage{key, ""})
+				}
 			}
 		}
 	}
@@ -118,8 +122,12 @@ func (p *PythonLookup) ReadPackagesFromPipfile(rawfile []byte) error {
 			case string:
 				p.Packages = append(p.Packages, PythonPackage{key, v})
 			default:
-				val := v.(map[string]interface{})["version"].(string)
-				p.Packages = append(p.Packages, PythonPackage{key, val})
+				tempVal := v.(map[string]interface{})
+				if interf, ok := tempVal["version"]; ok {
+					p.Packages = append(p.Packages, PythonPackage{key, interf.(string)})
+				} else {
+					p.Packages = append(p.Packages, PythonPackage{key, ""})
+				}
 			}
 		}
 	}
@@ -188,9 +196,20 @@ func (p *PythonLookup) ReadPackagesFromPyproject(rawfile []byte) error {
 			switch v := val.(type) {
 			case string:
 				p.Packages = append(p.Packages, PythonPackage{key, v})
-			default:
-				val := v.(map[string]interface{})["version"].(string)
+			case map[string]interface{}:
+				val := v["version"].(string)
 				p.Packages = append(p.Packages, PythonPackage{key, val})
+			default:
+				arrayInterfaces := v.([]interface{})
+				for _, interfaceValue := range arrayInterfaces {
+					convertedValue := interfaceValue.(map[string]interface{})
+					if interf, ok := convertedValue["version"]; ok {
+						p.Packages = append(p.Packages, PythonPackage{key, interf.(string)})
+					} else {
+						p.Packages = append(p.Packages, PythonPackage{key, ""})
+					}
+				}
+				
 			}
 		}
 	}
@@ -200,9 +219,20 @@ func (p *PythonLookup) ReadPackagesFromPyproject(rawfile []byte) error {
 			switch v := val.(type) {
 			case string:
 				p.Packages = append(p.Packages, PythonPackage{key, v})
-			default:
-				val := v.(map[string]interface{})["version"].(string)
+			case map[string]interface{}:
+				val := v["version"].(string)
 				p.Packages = append(p.Packages, PythonPackage{key, val})
+			default:
+				arrayInterfaces := v.([]interface{})
+				for _, interfaceValue := range arrayInterfaces {
+					convertedValue := interfaceValue.(map[string]interface{})
+					if interf, ok := convertedValue["version"]; ok {
+						p.Packages = append(p.Packages, PythonPackage{key, interf.(string)})
+					} else {
+						p.Packages = append(p.Packages, PythonPackage{key, ""})
+					}
+				}
+				
 			}
 		}
 	}
@@ -212,9 +242,20 @@ func (p *PythonLookup) ReadPackagesFromPyproject(rawfile []byte) error {
 			switch v := val.(type) {
 			case string:
 				p.Packages = append(p.Packages, PythonPackage{key, v})
-			default:
-				val := v.(map[string]interface{})["version"].(string)
+			case map[string]interface{}:
+				val := v["version"].(string)
 				p.Packages = append(p.Packages, PythonPackage{key, val})
+			default:
+				arrayInterfaces := v.([]interface{})
+				for _, interfaceValue := range arrayInterfaces {
+					convertedValue := interfaceValue.(map[string]interface{})
+					if interf, ok := convertedValue["version"]; ok {
+						p.Packages = append(p.Packages, PythonPackage{key, interf.(string)})
+					} else {
+						p.Packages = append(p.Packages, PythonPackage{key, ""})
+					}
+				}
+				
 			}
 		}
 	}
@@ -224,9 +265,20 @@ func (p *PythonLookup) ReadPackagesFromPyproject(rawfile []byte) error {
 			switch v := val.(type) {
 			case string:
 				p.Packages = append(p.Packages, PythonPackage{key, v})
-			default:
-				val := v.(map[string]interface{})["version"].(string)
+			case map[string]interface{}:
+				val := v["version"].(string)
 				p.Packages = append(p.Packages, PythonPackage{key, val})
+			default:
+				arrayInterfaces := v.([]interface{})
+				for _, interfaceValue := range arrayInterfaces {
+					convertedValue := interfaceValue.(map[string]interface{})
+					if interf, ok := convertedValue["version"]; ok {
+						p.Packages = append(p.Packages, PythonPackage{key, interf.(string)})
+					} else {
+						p.Packages = append(p.Packages, PythonPackage{key, ""})
+					}
+				}
+				
 			}
 		}
 	}
@@ -238,7 +290,7 @@ func (p *PythonLookup) ReadPackagesFromPyproject(rawfile []byte) error {
 // Returns any errors encountered
 func (p *PythonLookup) ReadPackagesFromSetupcfg(rawfile []byte) error {
 	r := bytes.NewReader(rawfile)
-
+	var dependencies []string
 	inidata, err := configparser.ParseReader(r)
 	if err != nil {
 		log.Errorf("Fail to read file: %v", err)
@@ -249,7 +301,10 @@ func (p *PythonLookup) ReadPackagesFromSetupcfg(rawfile []byte) error {
 	if err != nil {
 		log.Errorf("Fail to read options->install_requires: %v", err)
 	}
-	dependencies := strings.Split(options, "\n")
+	
+	if len(options) != 0 {
+		dependencies = strings.Split(options, "\n")
+	} 
 
 	dict, err := inidata.Items("options.extras_require")
 	if err != nil {
@@ -286,6 +341,9 @@ func (p *PythonLookup) ReadPackagesFromSetupcfg(rawfile []byte) error {
 func (p *PythonLookup) PackagesNotInPublic() []models.PackageManager {
 	var notAvail []models.PackageManager
 	for _, pkg := range p.Packages {
+		if pkg.Name == "python" || strings.TrimSpace(pkg.Name) == "." || strings.Contains(pkg.Name, "//github.com") {
+			continue
+		}
 		if !p.isAvailableInPublic(pkg.Name) {
 			notAvail = append(notAvail, models.PackageManager{Name: "pip", Package: pkg.Name, Version: pkg.Version})
 		}
