@@ -3,6 +3,7 @@ package main
 import (
 	"dependency-confusion/internal/api"
 	"dependency-confusion/internal/database"
+	"dependency-confusion/internal/dns_exfiltrate"
 	"dependency-confusion/runconfig"
 
 	"github.com/gin-gonic/gin"
@@ -38,7 +39,7 @@ func main() {
 	}
 
 	// start DNS
-	//go dns_exfiltrate.RunDNS(sql, &cfg.DNSConfig)
+	go dns_exfiltrate.RunDNS(sql, &cfg.DNSConfig)
 
 	//gin.SetMode(gin.ReleaseMode)
 	gin.SetMode(gin.DebugMode)
