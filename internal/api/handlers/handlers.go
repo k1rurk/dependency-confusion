@@ -61,7 +61,7 @@ func RootDir(g *gin.Context) {
 // @Failure 500 {string}  string	"Internal Server Error"
 // @Router /domain [post]
 func (h *HandlerConfig) FindDomainPackages(c *gin.Context) {
-	//TODO make faster with workers pool
+
 	var inputGau models.GauStruct
 
 	if err := c.ShouldBindJSON(&inputGau); err != nil {
@@ -484,10 +484,8 @@ func (h *HandlerConfig)GenerateReport(c *gin.Context) {
 	var generatedContent [][]string
 
 	for _, value := range h.Cache {
-		tempArray := make([]string, 0, 3)
-		tempArray[0] = value.Name
-		tempArray[1] = value.Package
-		tempArray[2] = value.Version
+		tempArray := []string{}
+		tempArray = append(tempArray, value.Name, value.Package, value.Version)
 		generatedContent = append(generatedContent, tempArray)
 	}
 	
