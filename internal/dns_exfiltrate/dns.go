@@ -11,7 +11,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
+	// "time"
 	log "github.com/sirupsen/logrus"
 	"github.com/miekg/dns"
 )
@@ -54,18 +54,18 @@ func (d *DNS) handleInteraction(w dns.ResponseWriter, r *dns.Msg) {
 	msg.SetReply(r)
 	remoteAddr := w.RemoteAddr().String()
 	q1 := r.Question[0]
-	t := time.Now()
+	// t := time.Now()
 
 	if dns.IsSubDomain(d.Config.Domain+".", q1.Name) && q1.Name != "ns1."+d.Config.Domain+"." && q1.Name != "ns2."+d.Config.Domain+"." && dns.TypeToString[q1.Qtype] == "A" {
 		addrParts := strings.Split(remoteAddr, ":")
-		dateString := "Received at: " + "`" + t.Format("January 2, 2006 3:04 PM") + "`"
-		fromString := "Received From: " + "`" + addrParts[0] + "`"
-		nameString := "Lookup Query: " + "`" + q1.Name + "`"
-		typeString := "Query Type: " + "`" + dns.TypeToString[q1.Qtype] + "`"
+		// dateString := "Received at: " + "`" + t.Format("January 2, 2006 3:04 PM") + "`"
+		// fromString := "Received From: " + "`" + addrParts[0] + "`"
+		// nameString := "Lookup Query: " + "`" + q1.Name + "`"
+		// typeString := "Query Type: " + "`" + dns.TypeToString[q1.Qtype] + "`"
 
-		message := "*Received DNS interaction:*" + "\n\n" + dateString + "\n" + fromString + "\n" + nameString + "\n" + typeString
+		// message := "*Received DNS interaction:*" + "\n\n" + dateString + "\n" + fromString + "\n" + nameString + "\n" + typeString
 		
-		log.Infoln(message)
+		// log.Infoln(message)
 
 		queryStr := strings.TrimRight(q1.Name, ".")
 		valArray := strings.Split(queryStr, ".")
