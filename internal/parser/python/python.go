@@ -163,10 +163,13 @@ func (p *PythonLookup) ReadPackagesFromPyproject(rawfile []byte) error {
 	configTreeProject := config.Get("project")
 	if configTreeProject != nil {
 		configTreeProjectTree := configTreeProject.(*toml.Tree)
-		aInterfaceProject := configTreeProjectTree.Get("dependencies").([]interface{})
-		aStringProject = make([]string, len(aInterfaceProject))
-		for i, v := range aInterfaceProject {
-			aStringProject[i] = v.(string)
+		aInterfaceProject := configTreeProjectTree.Get("dependencies")
+		if aInterfaceProject != nil {
+			aInterfaceProjectTemp := aInterfaceProject.([]interface{})
+			aStringProject = make([]string, len(aInterfaceProjectTemp))
+			for i, v := range aInterfaceProjectTemp {
+				aStringProject[i] = v.(string)
+			}
 		}
 	}
 
@@ -197,8 +200,11 @@ func (p *PythonLookup) ReadPackagesFromPyproject(rawfile []byte) error {
 			case string:
 				p.Packages = append(p.Packages, PythonPackage{key, v})
 			case map[string]interface{}:
-				val := v["version"].(string)
-				p.Packages = append(p.Packages, PythonPackage{key, val})
+				if val, ok := v["version"]; ok {
+					p.Packages = append(p.Packages, PythonPackage{key, val.(string)})
+				} else {
+					p.Packages = append(p.Packages, PythonPackage{key, ""})
+				}
 			default:
 				arrayInterfaces := v.([]interface{})
 				for _, interfaceValue := range arrayInterfaces {
@@ -209,7 +215,7 @@ func (p *PythonLookup) ReadPackagesFromPyproject(rawfile []byte) error {
 						p.Packages = append(p.Packages, PythonPackage{key, ""})
 					}
 				}
-				
+
 			}
 		}
 	}
@@ -220,8 +226,11 @@ func (p *PythonLookup) ReadPackagesFromPyproject(rawfile []byte) error {
 			case string:
 				p.Packages = append(p.Packages, PythonPackage{key, v})
 			case map[string]interface{}:
-				val := v["version"].(string)
-				p.Packages = append(p.Packages, PythonPackage{key, val})
+				if val, ok := v["version"]; ok {
+					p.Packages = append(p.Packages, PythonPackage{key, val.(string)})
+				} else {
+					p.Packages = append(p.Packages, PythonPackage{key, ""})
+				}
 			default:
 				arrayInterfaces := v.([]interface{})
 				for _, interfaceValue := range arrayInterfaces {
@@ -232,7 +241,7 @@ func (p *PythonLookup) ReadPackagesFromPyproject(rawfile []byte) error {
 						p.Packages = append(p.Packages, PythonPackage{key, ""})
 					}
 				}
-				
+
 			}
 		}
 	}
@@ -243,8 +252,11 @@ func (p *PythonLookup) ReadPackagesFromPyproject(rawfile []byte) error {
 			case string:
 				p.Packages = append(p.Packages, PythonPackage{key, v})
 			case map[string]interface{}:
-				val := v["version"].(string)
-				p.Packages = append(p.Packages, PythonPackage{key, val})
+				if val, ok := v["version"]; ok {
+					p.Packages = append(p.Packages, PythonPackage{key, val.(string)})
+				} else {
+					p.Packages = append(p.Packages, PythonPackage{key, ""})
+				}
 			default:
 				arrayInterfaces := v.([]interface{})
 				for _, interfaceValue := range arrayInterfaces {
@@ -255,7 +267,7 @@ func (p *PythonLookup) ReadPackagesFromPyproject(rawfile []byte) error {
 						p.Packages = append(p.Packages, PythonPackage{key, ""})
 					}
 				}
-				
+
 			}
 		}
 	}
@@ -266,8 +278,11 @@ func (p *PythonLookup) ReadPackagesFromPyproject(rawfile []byte) error {
 			case string:
 				p.Packages = append(p.Packages, PythonPackage{key, v})
 			case map[string]interface{}:
-				val := v["version"].(string)
-				p.Packages = append(p.Packages, PythonPackage{key, val})
+				if val, ok := v["version"]; ok {
+					p.Packages = append(p.Packages, PythonPackage{key, val.(string)})
+				} else {
+					p.Packages = append(p.Packages, PythonPackage{key, ""})
+				}
 			default:
 				arrayInterfaces := v.([]interface{})
 				for _, interfaceValue := range arrayInterfaces {
@@ -278,7 +293,7 @@ func (p *PythonLookup) ReadPackagesFromPyproject(rawfile []byte) error {
 						p.Packages = append(p.Packages, PythonPackage{key, ""})
 					}
 				}
-				
+
 			}
 		}
 	}
@@ -301,10 +316,10 @@ func (p *PythonLookup) ReadPackagesFromSetupcfg(rawfile []byte) error {
 	if err != nil {
 		log.Errorf("Fail to read options->install_requires: %v", err)
 	}
-	
+
 	if len(options) != 0 {
 		dependencies = strings.Split(options, "\n")
-	} 
+	}
 
 	dict, err := inidata.Items("options.extras_require")
 	if err != nil {
@@ -316,12 +331,14 @@ func (p *PythonLookup) ReadPackagesFromSetupcfg(rawfile []byte) error {
 	}
 
 	for _, val := range dependencies {
-		versionPattern := regexp.MustCompile(`(([>=<~])+\s*\d+[\w.-]*)`)
-		version := versionPattern.FindAllString(val, -1)
+		if strings.TrimSpace(val) != "" {
+			versionPattern := regexp.MustCompile(`(([>=<~])+\s*\d+[\w.-]*)`)
+			version := versionPattern.FindAllString(val, -1)
 
-		pkgrow := strings.FieldsFunc(val, p.pipSplit)
+			pkgrow := strings.FieldsFunc(val, p.pipSplit)
 
-		p.Packages = append(p.Packages, PythonPackage{strings.TrimSpace(pkgrow[0]), strings.Join(version, " ")})
+			p.Packages = append(p.Packages, PythonPackage{strings.TrimSpace(pkgrow[0]), strings.Join(version, " ")})
+		}
 	}
 
 	return nil
