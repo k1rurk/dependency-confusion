@@ -17,6 +17,7 @@ type PipPackage struct {
 }
 
 type NpmDNS struct {
+	Name string
 	DNS string
 }
 

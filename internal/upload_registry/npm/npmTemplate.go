@@ -10,7 +10,7 @@ import (
 func RunNPMTemplate(name, version, dns string) error {
 
 	npmPackageJSON := types.NPMPackage{Name: name, Version: version}
-	npmIndexJS := types.NpmDNS{DNS: dns}
+	npmIndexJS := types.NpmDNS{Name: name, DNS: dns}
 	_, b, _, _ := runtime.Caller(0)
 	basepath := filepath.Dir(b)
 
