@@ -11,9 +11,11 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
+
 	// "time"
-	log "github.com/sirupsen/logrus"
 	"github.com/miekg/dns"
+	log "github.com/sirupsen/logrus"
 )
 
 type DNS struct {
@@ -21,13 +23,15 @@ type DNS struct {
 	Config 				*runconfig.DNSConfig
 	cache 				map[string]map[int]string
 	cacheLastReceived 	map[string]int
+	mutex 				*sync.Mutex
 }
 
 
 func New(sql *sql.DB, config *runconfig.DNSConfig) *DNS {
 	cache := make(map[string]map[int]string)
 	cacheLastReceived := make(map[string]int)
-	return &DNS{sql, config, cache, cacheLastReceived}
+	var mutex sync.Mutex
+	return &DNS{sql, config, cache, cacheLastReceived, &mutex}
 }
 
 
@@ -66,7 +70,7 @@ func (d *DNS) handleInteraction(w dns.ResponseWriter, r *dns.Msg) {
 		// message := "*Received DNS interaction:*" + "\n\n" + dateString + "\n" + fromString + "\n" + nameString + "\n" + typeString
 		
 		// log.Infoln(message)
-
+		d.mutex.Lock()
 		queryStr := strings.TrimRight(q1.Name, ".")
 		valArray := strings.Split(queryStr, ".")
         if valArray[0] == "v2_f" && valArray[4] == "v2_e" {
@@ -104,6 +108,7 @@ func (d *DNS) handleInteraction(w dns.ResponseWriter, r *dns.Msg) {
 				database.AddData(d.SqlDB, addrParts[0], &dataExfiltrated)
 			}
         }
+		d.mutex.Unlock()
 	}
 	switch r.Question[0].Qtype {
 	case dns.TypeA:
