@@ -5,6 +5,7 @@ import (
 	"dependency-confusion/internal/parser"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"slices"
@@ -34,6 +35,8 @@ var ManifestFiles = []string{
 	"Gemfile.lock",
 	"Dockerfile",
 }
+
+var errEmptyRepo = errors.New("empty repository")
 
 type HttpClient struct {
 	Client   http.Client
@@ -98,7 +101,9 @@ func (o *Orgs) ScanAllRepos() ([]models.PackageManager, error) {
 	}
 	for _, repo := range orgRepos {
 		deps, err := o.ScanRepo(repo)
-		if err != nil {
+		if err == errEmptyRepo {
+			continue
+		} else if err != nil {
 			return nil, err
 		}
 		dependencies = append(dependencies, deps...)
@@ -209,6 +214,8 @@ func (o *Orgs) GetRepoFileTree(repoName string) error {
 			return err
 		}
 		o.FileTree[repoName] = fileTree
+	} else if resp.StatusCode == 409 {
+		return errEmptyRepo
 	} else {
 		return fmt.Errorf("failed to fetch repository details. Status code: %s, Response: %s", resp.Status, resp.Body)
 	}
@@ -254,4 +261,3 @@ func (o *Orgs) GetFileContent(repoName, filePath string) ([]byte, error) {
 		return nil, fmt.Errorf("failed to fetch file content. Status code: %s, Response: %s", resp.Status, resp.Body)
 	}
 }
-
