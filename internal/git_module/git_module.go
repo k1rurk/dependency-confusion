@@ -214,7 +214,7 @@ func (o *Orgs) GetRepoFileTree(repoName string) error {
 			return err
 		}
 		o.FileTree[repoName] = fileTree
-	} else if resp.StatusCode == 409 {
+	} else if resp.StatusCode == 409 || resp.StatusCode == 404 {
 		return errEmptyRepo
 	} else {
 		return fmt.Errorf("failed to fetch repository details. Status code: %s, Response: %s", resp.Status, resp.Body)
