@@ -12,7 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func Generate(contents [][]string) error {
+func Generate(target string, contents [][]string) error {
 	m := pdf.NewMaroto(consts.Portrait, consts.A4)
 	m.SetPageMargins(20, 10, 20)
 
@@ -33,7 +33,7 @@ func Generate(contents [][]string) error {
 
 	m.SetDefaultFontFamily("CustomArial")
 
-	buildHeading(m, basepath)
+	buildHeading(m, basepath, target)
 	buildPackageList(m, contents)
 
 	projectDir := tools.GetDirectoryProject()
@@ -48,7 +48,7 @@ func Generate(contents [][]string) error {
 	return nil
 }
 
-func buildHeading(m pdf.Maroto, dirPath string) {
+func buildHeading(m pdf.Maroto, dirPath, target string) {
 	m.RegisterHeader(func() {
 		m.Row(50, func() {
 			m.Col(12, func() {
@@ -64,9 +64,9 @@ func buildHeading(m pdf.Maroto, dirPath string) {
 		})
 	})
 
-	m.Row(15, func() {
+	m.Row(20, func() {
 		m.Col(12, func() {
-			m.Text("Отчет об уязвимости Dependency Confusion", props.Text{
+			m.Text("Отчет об уязвимости Dependency Confusion (" + target + ")", props.Text{
 				Top:    3,
 				Style:  consts.Bold,
 				Align:  consts.Center,

@@ -26,14 +26,18 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type Cache struct {
+	LastScannedTarget string
+	Packages []models.PackageManager
+}
 type HandlerConfig struct {
 	DB     *sql.DB
 	Config *runconfig.Config
-	Cache []models.PackageManager
+	Cache 	Cache
 }
 
 func New(db *sql.DB, config *runconfig.Config) *HandlerConfig {
-	return &HandlerConfig{db, config, []models.PackageManager{}}
+	return &HandlerConfig{db, config, Cache{"", []models.PackageManager{}}}
 }
 
 // @BasePath /api/v1
@@ -202,7 +206,8 @@ func (h *HandlerConfig) FindDomainPackages(c *gin.Context) {
 		return
 	}
 
-	h.Cache = dependencies
+	h.Cache.LastScannedTarget = "Домен: " + inputGau.Domain
+	h.Cache.Packages = dependencies
 	
 	c.JSON(http.StatusOK, gin.H{"data": dependencies})
 }
@@ -235,7 +240,8 @@ func (h *HandlerConfig) GetOrgRepos(c *gin.Context) {
 		return
 	}
 
-	h.Cache = dependencies
+	h.Cache.LastScannedTarget = "Github: " + input.Org
+	h.Cache.Packages = dependencies
 
 	c.JSON(http.StatusOK, gin.H{"data": dependencies})
 }
@@ -268,7 +274,8 @@ func (h *HandlerConfig) GetRepo(c *gin.Context) {
 		return
 	}
 
-	h.Cache = dependencies
+	h.Cache.LastScannedTarget = "Github: " + input.Name
+	h.Cache.Packages = dependencies
 
 	c.JSON(http.StatusOK, gin.H{"data": dependencies})
 }
@@ -337,7 +344,8 @@ func (h *HandlerConfig) ParseFile(c *gin.Context) {
 		return
 	}
 
-	h.Cache = dependencies
+	h.Cache.LastScannedTarget = "Загрузка файла"
+	h.Cache.Packages = dependencies
 
 	c.JSON(http.StatusOK, gin.H{"data": dependencies})
 }
@@ -407,7 +415,8 @@ func (h *HandlerConfig) ParseDir(c *gin.Context) {
 		return
 	}
 
-	h.Cache = dependencies
+	h.Cache.LastScannedTarget = "Загрузка директории"
+	h.Cache.Packages = dependencies
 
 	c.JSON(http.StatusOK, gin.H{"data": dependencies})
 }
@@ -483,13 +492,13 @@ func (h *HandlerConfig) SendPackageRegistry(c *gin.Context) {
 func (h *HandlerConfig)GenerateReport(c *gin.Context) {
 	var generatedContent [][]string
 
-	for _, value := range h.Cache {
+	for _, value := range h.Cache.Packages {
 		tempArray := []string{}
 		tempArray = append(tempArray, value.Name, value.Package, value.Version)
 		generatedContent = append(generatedContent, tempArray)
 	}
 	
-	err := report.Generate(generatedContent)
+	err := report.Generate(h.Cache.LastScannedTarget, generatedContent)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		log.Errorln(err)
